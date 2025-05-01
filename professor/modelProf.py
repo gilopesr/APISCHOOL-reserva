@@ -1,9 +1,3 @@
-# dici = {
-#         "professores" : [
-#         {"id":1,"nome":"carlos", "idade":30, "materia":"matematica", "observacao":"bom professor"}
-#         ,{"id":2,"nome":"lucas", "idade":34, "materia":"POO", "observacao":"bom professor"} 
-#         ]
-# }
 from config import db
 
 
@@ -16,8 +10,6 @@ class Professor(db.Model):
     materia = db.Column(db.String(100))
     observacao = db.Column(db.String(200))
 
-    turmas = db.relationship("Turma", back_populates="professor")
-
     def __init__(self, nome, idade, materia, observacao):
         self.nome = nome
         self.idade = idade
@@ -25,7 +17,13 @@ class Professor(db.Model):
         self.observacao = observacao
 
     def to_dict(self):
-        return {'id': self.id, 'nome': self.nome, 'idade': self.idade, 'materia':self.materia, 'observação': self.observacao}
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'idade': self.idade,
+            'materia': self.materia,
+            'observação': self.observacao
+        }
 
 
 
@@ -55,33 +53,23 @@ def apaga_tudo():
         return f"Erro ao resetar o banco de dados: {e}"
 
 
-def create_professores(id, nome, idade, materia, observacao):
-    if not id or not nome or not idade or not materia or not observacao:
-        return {'erro': 'Parâmetro obrigatório ausente'}
-
-    if not isinstance(id, int) or id <= 0:
-        return {'erro': 'O id deve ser um número inteiro positivo'}
+def create_professores(nome, idade, materia, observacao):
+    if not nome or not idade or not materia:
+        return {'erro': 'Parâmetro obrigatório ausente'}, 400
 
     if not isinstance(nome, str):
-        return {'erro': 'O nome deve ser uma string'}
-
+        return {'erro': 'O nome deve ser uma string'}, 400
     if not isinstance(idade, int):
-        return {'erro': 'A idade deve ser um número inteiro'}
-
+        return {'erro': 'A idade deve ser um número inteiro'}, 400
     if not isinstance(materia, str):
-        return {'erro': 'A matéria deve ser uma string'}
+        return {'erro': 'A matéria deve ser uma string'}, 400
+    if observacao is not None and not isinstance(observacao, str):
+        return {'erro': 'A observação deve ser uma string'}, 400
 
-    if not isinstance(observacao, str):
-        return {'erro': 'A observação deve ser uma string'}
-
-    prof_existente = Professor.query.get(id)
-    if prof_existente:
-        return {'erro': 'id ja utilizada'}
-
-    novo_prof = Professor(id=id, nome=nome, idade=idade, materia=materia, observacao=observacao)
+    novo_prof = Professor(nome=nome, idade=idade, materia=materia, observacao=observacao)
     db.session.add(novo_prof)
     db.session.commit()
-    return novo_prof.to_dict()
+    return novo_prof.to_dict(), 201
 
 
 def atualizarProfessor(id_professor, nome=None, idade=None, materia=None, observacao=None, body_id=None):

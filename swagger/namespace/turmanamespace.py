@@ -5,13 +5,15 @@ turma_ns = Namespace("turma", description="Dados relacionados as tumas")
 
 turma_model = turma_ns.model("Turma", {
     "nome": fields.String(required=True, description="Nome da turma"),
-    "professor": fields.String(required=True, description="Professor Responsavel")
+    "professor_id": fields.Integer(required=True, description="ID do Professor Responsavel"),
+    "professor_nome": fields.String(required=True, description="Nome do Professor Responsavel"),
 })
 
 turma_output_model = turma_ns.model("turmaOutput", {
     "id": fields.Integer(description="ID da turma"),
     "nome": fields.String(description="Nome da turma"),
-    "professor": fields.String(required=True, description="Professor Responsavel")
+    "professor_id": fields.Integer(required=True, description="ID do Professor Responsavel"),
+    "professor_nome": fields.String(required=True, description="Nome do Professor Responsavel"),
 })
 
 @turma_ns.route("/")
@@ -25,7 +27,9 @@ class TurmaResource(Resource):
     def post(self):
         """Cria uma nova turma"""
         data = turma_ns.payload
-        response, status_code = createTurma(data)
+        nome_turma = data.get('nome')
+        professor_turma = data.get('professor')
+        response, status_code = createTurma(nome_turma, professor_turma)
         return response, status_code
 
 @turma_ns.route("/<int:id_turma>")

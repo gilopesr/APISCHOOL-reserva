@@ -6,17 +6,19 @@ class Turma(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     nome = db.Column(db.String(100))
     professor_id = db.Column(db.Integer, db.ForeignKey("professor.id"), nullable=False)
-    professor = db.relationship("Professor", back_populates="turmas")
 
-    def __init__(self, nome):
+    def __init__(self, nome, professor_id):
         self.nome = nome
+        self.professor_id = professor_id
 
     def to_dict(self):
+        from professor.modelProf import Professor
+        professor = Professor.query.get(self.professor_id)
         professor_data = None
-        if self.professor:
+        if professor:
             professor_data = {
-                'id': self.professor.id,
-                'nome': self.professor.nome,
+                'id': professor.id,
+                'nome': professor.nome,
             }
         return {'id': self.id, 'nome': self.nome, 'professor': professor_data}
 
@@ -45,24 +47,17 @@ def apaga_tudo():
         db.session.rollback()
         return f"Erro ao resetar o banco de dados: {e}"
 
-def createTurma(id, nome, professor):
-    if not id or not nome or not professor:
+def createTurma(nome, professor_id):
+    if not nome or not professor_id:
         return {'erro': 'Parâmetro obrigatório ausente'}
-
-    if not isinstance(id, int) or id <= 0:
-        return {'erro': 'O id deve ser um número inteiro'}
 
     if not isinstance(nome, str):
         return {'erro': 'O nome deve ser uma string'}
 
-    if not isinstance(professor, str):
-        return {'erro': 'O professor deve ser uma string'}
+    if not isinstance(professor_id, int):
+        return {'erro': 'O professor id deve ser um inteiro'}
 
-    turma_existente = Turma.query.get(id)
-    if turma_existente:
-        return {'erro': 'id ja utilizada'}
-
-    nova_turma = Turma(id=id, nome=nome,professor=professor)
+    nova_turma = Turma(nome=nome, professor_id=professor_id)
     db.session.add(nova_turma)
     db.session.commit()
 

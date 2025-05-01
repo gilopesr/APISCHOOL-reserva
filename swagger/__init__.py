@@ -6,4 +6,5 @@ api = Api(
     description="Documentação da API para Alunos, Professores e Turmas",
     doc="/docs",
     mask_swagger=False,  # Desativa o X-Fields no Swagger,
+    prefix="/api"
 )
